@@ -1,12 +1,16 @@
 using Microsoft.EntityFrameworkCore;
 using SistemaGestionClientesPedidos.API.Data;
 using SistemaGestionClientesPedidos.API.Hubs;
+using SistemaGestionClientesPedidos.API.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Configuración de servicios
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
+builder.Services.AddScoped<IPedidoRepository, PedidoRepository>();
 
 builder.Services.AddSignalR();
 builder.Services.AddControllers();

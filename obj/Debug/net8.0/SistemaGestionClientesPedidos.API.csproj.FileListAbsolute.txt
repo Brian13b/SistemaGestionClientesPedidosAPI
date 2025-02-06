@@ -173,3 +173,4 @@ E:\TUP\Backend\SistemaGestionClientesPedidos.API\obj\Debug\net8.0\refint\Sistema
 E:\TUP\Backend\SistemaGestionClientesPedidos.API\obj\Debug\net8.0\SistemaGestionClientesPedidos.API.pdb
 E:\TUP\Backend\SistemaGestionClientesPedidos.API\obj\Debug\net8.0\SistemaGestionClientesPedidos.API.genruntimeconfig.cache
 E:\TUP\Backend\SistemaGestionClientesPedidos.API\obj\Debug\net8.0\ref\SistemaGestionClientesPedidos.API.dll
+E:\TUP\Backend\SistemaGestionClientesPedidos.API\obj\Debug\net8.0\SistemaGestionClientesPedidos.API.sourcelink.json
