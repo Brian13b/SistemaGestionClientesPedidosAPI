@@ -19,7 +19,7 @@ namespace SistemaGestionClientesPedidos.API.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task AgregarCleinteAsync(Cliente cliente)
+        public async Task AgregarClienteAsync(Cliente cliente)
         {
             _context.Clientes.Add(cliente);
             await _context.SaveChangesAsync();

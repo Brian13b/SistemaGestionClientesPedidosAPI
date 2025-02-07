@@ -6,7 +6,7 @@ namespace SistemaGestionClientesPedidos.API.Repositories
     {
         Task<List<Cliente>> ObtenerTodosAsync();
         Task<Cliente> ObtenerPorIdAsync(int id);
-        Task AgregarCleinteAsync(Cliente cliente);
+        Task AgregarClienteAsync(Cliente cliente);
         Task ActualizarClienteAsync(Cliente cliente);
         Task EliminarClienteAsync(int id);
     }
