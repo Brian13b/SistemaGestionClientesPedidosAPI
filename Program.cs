@@ -1,9 +1,13 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using SistemaGestionClientesPedidos.API.Data;
 using SistemaGestionClientesPedidos.API.Hubs;
 using SistemaGestionClientesPedidos.API.Repositories;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+var key = Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"]);
 
 // Configuración de servicios
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -14,6 +18,23 @@ builder.Services.AddScoped<IPedidoRepository, PedidoRepository>();
 
 builder.Services.AddSignalR();
 builder.Services.AddControllers();
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(key)
+        };
+    });
+
+builder.Services.AddAuthorization();
 
 // Configurar Swagger
 builder.Services.AddEndpointsApiExplorer();
