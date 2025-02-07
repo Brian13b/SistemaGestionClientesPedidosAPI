@@ -2,6 +2,8 @@
 using SistemaGestionClientesPedidos.API.DTOs;
 using SistemaGestionClientesPedidos.API.Repositories;
 using SistemaGestionClientesPedidos.API.Models;
+using Microsoft.AspNetCore.SignalR;
+using SistemaGestionClientesPedidos.API.Hubs;
 
 namespace SistemaGestionClientesPedidos.API.Controllers
 {
@@ -9,17 +11,19 @@ namespace SistemaGestionClientesPedidos.API.Controllers
     [Route("api/[controller]")]
     public class PedidosController : ControllerBase
     {
-        private readonly IPedidoRepository pedidoRepository;
+        private readonly IPedidoRepository _pedidoRepository;
+        private readonly IHubContext<PedidoHub> _hubContext;
 
-        public PedidosController(IPedidoRepository pedidoRepository)
+        public PedidosController(IPedidoRepository pedidoRepository, IHubContext<PedidoHub> hubContext)
         {
-            this.pedidoRepository = pedidoRepository;
+            _pedidoRepository = pedidoRepository;
+            _hubContext = hubContext;
         }
 
         [HttpGet]
         public async Task<IActionResult> ObtenerTodos()
         {
-            var pedidos = await pedidoRepository.ObtenerTodosAsync();
+            var pedidos = await _pedidoRepository.ObtenerTodosAsync();
             var pedidosResponse = pedidos.Select(p => new PedidoResponseDTO
             {
                 Id = p.Id,
@@ -42,7 +46,7 @@ namespace SistemaGestionClientesPedidos.API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> ObtenerPorId(int id)
         {
-            var pedido = await pedidoRepository.ObtenerPorIdAsync(id);
+            var pedido = await _pedidoRepository.ObtenerPorIdAsync(id);
             if (pedido == null)
             {
                 return NotFound();
@@ -78,7 +82,8 @@ namespace SistemaGestionClientesPedidos.API.Controllers
                 ClienteId = pedidoDTO.ClienteId
             };
 
-            await pedidoRepository.AgregarPedidoAsync(pedido);
+            await _pedidoRepository.AgregarPedidoAsync(pedido);
+            await _hubContext.Clients.All.SendAsync("RecibirNotificacion", $"Nuevo pedido creado: {pedido.Descripcion}");
 
             var pedidoResponse = new PedidoResponseDTO
             {
@@ -95,7 +100,7 @@ namespace SistemaGestionClientesPedidos.API.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Actualizar(int id, [FromBody] PedidoDTO pedidoDTO)
         {
-            var pedido = await pedidoRepository.ObtenerPorIdAsync(id);
+            var pedido = await _pedidoRepository.ObtenerPorIdAsync(id);
             if (pedido == null)
             {
                 return NotFound();
@@ -106,7 +111,7 @@ namespace SistemaGestionClientesPedidos.API.Controllers
             pedido.Estado = pedidoDTO.Estado;
             pedido.ClienteId = pedidoDTO.ClienteId;
 
-            await pedidoRepository.ActualizarPedidoAsync(pedido);
+            await _pedidoRepository.ActualizarPedidoAsync(pedido);
 
             var pedidoResponse = new PedidoResponseDTO
             {
@@ -124,13 +129,15 @@ namespace SistemaGestionClientesPedidos.API.Controllers
                 }
             };
 
+            await _hubContext.Clients.All.SendAsync("RecibirNotificacion", $"Pedido Actualizado");
+
             return Ok(pedidoResponse);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Eliminar(int id)
         {
-            await pedidoRepository.EliminarPedidoAsync(id);
+            await _pedidoRepository.EliminarPedidoAsync(id);
             return NoContent();
         }
     }

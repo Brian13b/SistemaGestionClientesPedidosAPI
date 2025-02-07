@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SistemaGestionClientesPedidos.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a4d4869ca6745da20bf1eced03824f8bb6b5e8fe")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d1ef1a827c51f39cd96e271a48b464c44a6c3e92")]
 [assembly: System.Reflection.AssemblyProductAttribute("SistemaGestionClientesPedidos.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SistemaGestionClientesPedidos.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
