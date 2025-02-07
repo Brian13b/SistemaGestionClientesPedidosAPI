@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="..\buildMultiTargeting\SistemaGestionClientesPedidos.API.props" />
-</Project>
