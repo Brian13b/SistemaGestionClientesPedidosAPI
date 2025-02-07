@@ -12,11 +12,13 @@ namespace SistemaGestionClientesPedidos.API.Controllers
     public class PedidosController : ControllerBase
     {
         private readonly IPedidoRepository _pedidoRepository;
+        private readonly IClienteRepository _clienteRepository;
         private readonly IHubContext<PedidoHub> _hubContext;
 
-        public PedidosController(IPedidoRepository pedidoRepository, IHubContext<PedidoHub> hubContext)
+        public PedidosController(IPedidoRepository pedidoRepository, IClienteRepository clienteRepository, IHubContext<PedidoHub> hubContext)
         {
             _pedidoRepository = pedidoRepository;
+            _clienteRepository = clienteRepository;
             _hubContext = hubContext;
         }
 
@@ -24,6 +26,16 @@ namespace SistemaGestionClientesPedidos.API.Controllers
         public async Task<IActionResult> ObtenerTodos()
         {
             var pedidos = await _pedidoRepository.ObtenerTodosAsync();
+
+            if (pedidos == null)
+            {
+                return NotFound();
+            }
+
+            var clientes = await _clienteRepository.ObtenerTodosAsync();
+
+            var clientesDict = clientes.ToDictionary(c => c.Id);
+
             var pedidosResponse = pedidos.Select(p => new PedidoResponseDTO
             {
                 Id = p.Id,
@@ -31,13 +43,13 @@ namespace SistemaGestionClientesPedidos.API.Controllers
                 FechaPedido = p.FechaPedido,
                 Estado = p.Estado,
                 ClienteId = p.ClienteId,
-                Cliente = new ClienteResponseDTO
+                Cliente = clientesDict.ContainsKey(p.ClienteId) ? new ClienteResponseDTO
                 {
-                    Id = p.Cliente.Id,
-                    Nombre = p.Cliente.Nombre,
-                    Email = p.Cliente.Email,
-                    Telefono = p.Cliente.Telefono
-                }
+                    Id = p.ClienteId,
+                    Nombre = clientesDict[p.ClienteId].Nombre,
+                    Email = clientesDict[p.ClienteId].Email,
+                    Telefono = clientesDict[p.ClienteId].Telefono
+                } : null
             }).ToList();
 
             return Ok(pedidosResponse);
@@ -47,10 +59,13 @@ namespace SistemaGestionClientesPedidos.API.Controllers
         public async Task<IActionResult> ObtenerPorId(int id)
         {
             var pedido = await _pedidoRepository.ObtenerPorIdAsync(id);
+
             if (pedido == null)
             {
                 return NotFound();
             }
+
+            var cliente = await _clienteRepository.ObtenerPorIdAsync(pedido.ClienteId);
 
             var pedidoResponse = new PedidoResponseDTO
             {
@@ -61,10 +76,10 @@ namespace SistemaGestionClientesPedidos.API.Controllers
                 ClienteId = pedido.ClienteId,
                 Cliente = new ClienteResponseDTO
                 {
-                    Id = pedido.Cliente.Id,
-                    Nombre = pedido.Cliente.Nombre,
-                    Email = pedido.Cliente.Email,
-                    Telefono = pedido.Cliente.Telefono
+                    Id = cliente.Id,
+                    Nombre = cliente.Nombre,
+                    Email = cliente.Email,
+                    Telefono = cliente.Telefono
                 }
             };
 
@@ -84,6 +99,7 @@ namespace SistemaGestionClientesPedidos.API.Controllers
 
             await _pedidoRepository.AgregarPedidoAsync(pedido);
             await _hubContext.Clients.All.SendAsync("RecibirNotificacion", $"Nuevo pedido creado: {pedido.Descripcion}");
+            var cliente = await _clienteRepository.ObtenerPorIdAsync(pedido.ClienteId);
 
             var pedidoResponse = new PedidoResponseDTO
             {
@@ -91,7 +107,14 @@ namespace SistemaGestionClientesPedidos.API.Controllers
                 Descripcion = pedido.Descripcion,
                 FechaPedido = pedido.FechaPedido,
                 Estado = pedido.Estado,
-                ClienteId = pedido.ClienteId
+                ClienteId = pedido.ClienteId,
+                Cliente = new ClienteResponseDTO
+                {
+                    Id = cliente.Id,
+                    Nombre = cliente.Nombre,
+                    Email = cliente.Email,
+                    Telefono = cliente.Telefono
+                }
             };
 
             return CreatedAtAction(nameof(ObtenerPorId), new { id = pedido.Id }, pedidoResponse);
@@ -101,6 +124,7 @@ namespace SistemaGestionClientesPedidos.API.Controllers
         public async Task<IActionResult> Actualizar(int id, [FromBody] PedidoDTO pedidoDTO)
         {
             var pedido = await _pedidoRepository.ObtenerPorIdAsync(id);
+
             if (pedido == null)
             {
                 return NotFound();
@@ -113,6 +137,8 @@ namespace SistemaGestionClientesPedidos.API.Controllers
 
             await _pedidoRepository.ActualizarPedidoAsync(pedido);
 
+            var cliente = await _clienteRepository.ObtenerPorIdAsync(pedido.ClienteId);
+
             var pedidoResponse = new PedidoResponseDTO
             {
                 Id = pedido.Id,
@@ -122,10 +148,10 @@ namespace SistemaGestionClientesPedidos.API.Controllers
                 ClienteId = pedido.ClienteId,
                 Cliente = new ClienteResponseDTO
                 {
-                    Id = pedido.Cliente.Id,
-                    Nombre = pedido.Cliente.Nombre,
-                    Email = pedido.Cliente.Email,
-                    Telefono = pedido.Cliente.Telefono
+                    Id = cliente.Id,
+                    Nombre = cliente.Nombre,
+                    Email = cliente.Email,
+                    Telefono = cliente.Telefono
                 }
             };
 
